@@ -12,7 +12,8 @@ WIDTH = 1300
 HEIGHT = 900
 BORDER = 20
 
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+arena = pygame.Surface((WIDTH, HEIGHT))
 pygame.display.set_caption("Tanky")
 
 clock = pygame.time.Clock()
@@ -67,18 +68,18 @@ while True:
         tank2.alive = False
 
     
-    screen.fill((30,30,30))
-    pygame.draw.rect(screen, (100,100,100), (0, 0, WIDTH, BORDER))  
-    pygame.draw.rect(screen, (100,100,100), (0, HEIGHT-BORDER, WIDTH, BORDER))  
-    pygame.draw.rect(screen, (100,100,100), (0, 0, BORDER, HEIGHT))  
-    pygame.draw.rect(screen, (100,100,100), (WIDTH-BORDER, 0, BORDER, HEIGHT))
+    arena.fill((30,30,30))
+    pygame.draw.rect(arena, (100,100,100), (0, 0, WIDTH, BORDER))  
+    pygame.draw.rect(arena, (100,100,100), (0, HEIGHT-BORDER, WIDTH, BORDER))  
+    pygame.draw.rect(arena, (100,100,100), (0, 0, BORDER, HEIGHT))  
+    pygame.draw.rect(arena, (100,100,100), (WIDTH-BORDER, 0, BORDER, HEIGHT))
 
 
-    tank1.draw(screen)
-    tank2.draw(screen)
+    tank1.draw(arena)
+    tank2.draw(arena)
     for explosion in explosions:
-        pygame.draw.circle(screen, (255,150,0), (int(explosion[0]), int(explosion[1])), explosion[2])
-        pygame.draw.circle(screen, (255,200,0), (int(explosion[0]), int(explosion[1])), explosion[2]//2)
+        pygame.draw.circle(arena, (255,150,0), (int(explosion[0]), int(explosion[1])), explosion[2])
+        pygame.draw.circle(arena, (255,200,0), (int(explosion[0]), int(explosion[1])), explosion[2]//2)
         explosion[2] += 2
     explosions = [e for e in explosions if e[2] < 40]
     """
@@ -88,6 +89,15 @@ while True:
     text = font.render("Reset", True, (255,255,255))
     screen.blit(text, (reset_button.x + 20, reset_button.y + 10))
     """
+    
+    window_width, window_height = screen.get_size()
+    scale = min(window_width / WIDTH, window_height / HEIGHT)
+    scaled_width = int(WIDTH * scale)
+    scaled_height = int(HEIGHT * scale)
+    scaled_arena = pygame.transform.scale(arena, (scaled_width, scaled_height))
+    offset_x = (window_width - scaled_width) // 2
+    offset_y = (window_height - scaled_height) // 2
+    screen.fill((0,0,0))
+    screen.blit(scaled_arena, (offset_x, offset_y))
     pygame.display.flip()
-
     clock.tick(60)

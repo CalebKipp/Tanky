@@ -2,15 +2,14 @@ import pygame
 import math
 
 class Tank:
-    def __init__(self, tank_color, tank_x, tank_y, player_num):
-
+    def __init__(self, tank_color, tank_x, tank_y, tank_angle, player_num):
         self.tank_width = 50
         self.tank_height = 30
 
         self.tank_x = tank_x
         self.tank_y = tank_y
 
-        self.tank_angle = 0
+        self.tank_angle = tank_angle
 
         self.max_bullets = 5
         self.shoot_cooldown = 400
@@ -25,6 +24,7 @@ class Tank:
 
         self.alive = True
 
+        self.lives = 3
         # tank body
         self.body_y_offset = 45
         self.body_x = self.tank_surface_size/2 - self.tank_width/2
@@ -39,9 +39,7 @@ class Tank:
         self.bullets = []
 
     def draw_tank(self):
-
         self.tank_surface.fill((0,0,0,0))
-
         pygame.draw.rect(
             self.tank_surface,
             self.tank_color,
@@ -72,6 +70,7 @@ class Tank:
 
             if keys[pygame.K_SPACE]:
                 self.shoot()
+
         if self.player_num == 2:
             if keys[pygame.K_UP]:
                 self.tank_x += math.cos(math.radians(self.tank_angle)) * 5
@@ -89,43 +88,43 @@ class Tank:
 
             if keys[pygame.K_l]:
                 self.shoot()
-
-
+                
     def shoot(self):
-
         current_time = pygame.time.get_ticks()
-
         if len(self.bullets) < self.max_bullets and current_time - self.last_shot_time > self.shoot_cooldown:
-
             self.bullets.append([self.tank_x, self.tank_y, self.tank_angle])
-
             self.last_shot_time = current_time
 
 
     def update_bullets(self, WIDTH, HEIGHT):
-
         for bullet in self.bullets:
-
             bullet[0] += math.cos(math.radians(bullet[2])) * 8
             bullet[1] -= math.sin(math.radians(bullet[2])) * 8
-
         self.bullets = [b for b in self.bullets if 0 < b[0] < WIDTH and 0 < b[1] < HEIGHT]
 
 
     def draw(self, screen):
         if self.alive != True:
             return
-
         self.draw_tank()
-
         rotated_tank = pygame.transform.rotate(self.tank_surface, self.tank_angle)
-
         rect = rotated_tank.get_rect(center=(int(self.tank_x), int(self.tank_y)))
-
         screen.blit(rotated_tank, rect)
-
         for bullet in self.bullets:
             pygame.draw.circle(screen, (255,255,0), (int(bullet[0]), int(bullet[1])), 5)
 
     def get_rect(self):
         return pygame.Rect(self.tank_x - self.tank_width/2, self.tank_y - self.tank_height/2, self.tank_width, self.tank_height)
+    
+    def reset(self):
+        self.lives = 3
+        self.alive = True       
+        if self.player_num == 1:
+            self.tank_x = 100
+            self.tank_y = 450
+            self.tank_angle = 0
+        
+        if self.player_num == 2:
+            self.tank_x = 1200
+            self.tank_y = 450
+            self.tank_angle = 180

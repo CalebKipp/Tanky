@@ -3,19 +3,23 @@ import sys
 from tank_class import Tank
 
 pygame.init()
-
+pygame.mixer.init()
+pygame.mixer.set_num_channels(16)
+pygame.mixer.music.load("battlemusic.mp3")
+pygame.mixer.music.set_volume(0.3)
+pygame.mixer.music.play(-1)
 WIDTH = 1300
 HEIGHT = 900
 BORDER = 20
-
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Tanky")
 
 clock = pygame.time.Clock()
 
-tank1 = Tank((255,0,0), 600, 400, 1)
-tank2 = Tank((0,255,0), 800, 600, 2)
+boom_sound = pygame.mixer.Sound("boom.wav")
+tank1 = Tank((255,0,0), 100, 450, 0, 1)
+tank2 = Tank((0,255,0), 1200, 450, 180, 2)
 explosions = []
 """
 reset_button = pygame.Rect(WIDTH - 120, 20, 100, 40)
@@ -29,9 +33,8 @@ while True:
             sys.exit() 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_r:
-                tank1.alive = True
-                tank2.alive = True
-
+                tank1.reset()
+                tank2.reset()
     keys = pygame.key.get_pressed()
 
     tank1.update(keys)
@@ -47,16 +50,21 @@ while True:
 
     for bullet in tank1.bullets:
         if tank2.alive and tank2.get_rect().collidepoint(bullet[0], bullet[1]):
-            tank2.alive = False
+            tank2.lives -= 1
             tank1.bullets.remove(bullet)
             explosions.append([tank2.tank_x, tank2.tank_y, 1])
+            boom_sound.play()
     for bullet in tank2.bullets:
         if tank1.alive and tank1.get_rect().collidepoint(bullet[0], bullet[1]):
-            tank1.alive = False
+            tank1.lives -= 1
             tank2.bullets.remove(bullet)
             explosions.append([tank1.tank_x, tank1.tank_y, 1])
+            boom_sound.play()
+    if tank1.lives == 0:
+        tank1.alive = False
     
-
+    if tank2.lives == 0:
+        tank2.alive = False
 
     
     screen.fill((30,30,30))

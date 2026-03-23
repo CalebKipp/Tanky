@@ -1,4 +1,5 @@
 import pygame
+import random
 import math
 
 class Tank:
@@ -8,7 +9,7 @@ class Tank:
 
         self.tank_x = tank_x
         self.tank_y = tank_y
-
+        
         self.tank_angle = tank_angle
 
         self.max_bullets = 5
@@ -38,6 +39,8 @@ class Tank:
 
         self.bullets = []
 
+        self.shoot_sound = pygame.mixer.Sound("sounds/shoot.wav")
+
     def draw_tank(self):
         self.tank_surface.fill((0,0,0,0))
         pygame.draw.rect(
@@ -52,16 +55,18 @@ class Tank:
             (self.gun_x, self.gun_y, self.gun_width, self.gun_length)
         )
 
-    def update(self, keys):
+    def update(self, keys, target):
+        self.prev_x = self.tank_x
+        self.prev_y = self.tank_y
         if self.player_num == 1:
             if keys[pygame.K_w]:
                 self.tank_x += math.cos(math.radians(self.tank_angle)) * 5
                 self.tank_y -= math.sin(math.radians(self.tank_angle)) * 5
-
+                
             if keys[pygame.K_s]:
                 self.tank_x -= math.cos(math.radians(self.tank_angle)) * 5
                 self.tank_y += math.sin(math.radians(self.tank_angle)) * 5
-
+                
             if keys[pygame.K_a]:
                 self.tank_angle += 5
 
@@ -88,12 +93,57 @@ class Tank:
 
             if keys[pygame.K_l]:
                 self.shoot()
-                
+        if self.player_num == "ai":
+            self.update_ai(target)
+
+    def update_ai(self, target):
+        if not self.alive:
+            return
+
+        # store previous position for wall collisions
+        self.prev_x = self.tank_x
+        self.prev_y = self.tank_y
+
+        # calculate vector to target
+        dx = target.tank_x - self.tank_x
+        dy = target.tank_y - self.tank_y
+
+        # angle to player
+        angle_to_target = math.degrees(math.atan2(-dy, dx))
+
+        # add some inaccuracy so CPU doesn't lock perfectly
+        angle_to_target += random.uniform(-90, 90)  # ±15 degrees jitter, tweak as needed
+
+        # difference between current angle and target angle
+        angle_diff = (angle_to_target - self.tank_angle + 180) % 360 - 180
+
+        # rotate tank toward target (slower for more human-like behavior)
+        rotate_speed = 2  # degrees per frame
+        if angle_diff > rotate_speed:
+            self.tank_angle += rotate_speed
+        elif angle_diff < -rotate_speed:
+            self.tank_angle -= rotate_speed
+
+        # move toward player if too far
+        distance = math.hypot(dx, dy)
+        move_speed = 2  # adjust speed for difficulty
+        if distance > 200:  # only approach if far
+            self.tank_x += math.cos(math.radians(self.tank_angle)) * move_speed
+            self.tank_y -= math.sin(math.radians(self.tank_angle)) * move_speed
+
+        # shooting with random delay to make CPU less perfect
+        current_time = pygame.time.get_ticks()
+        if abs(angle_diff) < 10:  # only shoot when roughly aimed
+            if len(self.bullets) < self.max_bullets and current_time - self.last_shot_time > self.shoot_cooldown + random.randint(0, 300):
+                self.bullets.append([self.tank_x, self.tank_y, self.tank_angle])
+                self.last_shot_time = current_time
+                self.shoot_sound.play()
     def shoot(self):
         current_time = pygame.time.get_ticks()
         if len(self.bullets) < self.max_bullets and current_time - self.last_shot_time > self.shoot_cooldown:
             self.bullets.append([self.tank_x, self.tank_y, self.tank_angle])
             self.last_shot_time = current_time
+            self.shoot_sound.play()
 
 
     def update_bullets(self, WIDTH, HEIGHT):

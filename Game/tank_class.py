@@ -14,6 +14,7 @@ class Tank:
 
         self.max_bullets = 5
         self.shoot_cooldown = 400
+        self.shoot_cooldown_ai = 800
         self.last_shot_time = 0
 
         self.tank_color = tank_color
@@ -112,7 +113,7 @@ class Tank:
         angle_to_target = math.degrees(math.atan2(-dy, dx))
 
         # add some inaccuracy so CPU doesn't lock perfectly
-        angle_to_target += random.uniform(-90, 90)  # ±15 degrees jitter, tweak as needed
+        angle_to_target += random.uniform(-100, 100)  # tweak as needed, jitter
 
         # difference between current angle and target angle
         angle_diff = (angle_to_target - self.tank_angle + 180) % 360 - 180
@@ -134,7 +135,7 @@ class Tank:
         # shooting with random delay to make CPU less perfect
         current_time = pygame.time.get_ticks()
         if abs(angle_diff) < 10:  # only shoot when roughly aimed
-            if len(self.bullets) < self.max_bullets and current_time - self.last_shot_time > self.shoot_cooldown + random.randint(0, 300):
+            if len(self.bullets) < self.max_bullets and current_time - self.last_shot_time > self.shoot_cooldown_ai+ random.randint(0, 300):
                 self.bullets.append([self.tank_x, self.tank_y, self.tank_angle])
                 self.last_shot_time = current_time
                 self.shoot_sound.play()

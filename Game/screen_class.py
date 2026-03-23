@@ -81,12 +81,12 @@ class Screen:
 
             controls = [
                 "Controls",
-                "Red Tank:",
+                "Player 1:",
                 "W/S - Forward / Back",
                 "A/D - Rotate",
                 "SPACE - Shoot",
                 "",
-                "Green Tank:",
+                "Player 2:",
                 "Arrow Keys - Move",
                 "L - Shoot",
             ]

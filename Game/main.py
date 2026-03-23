@@ -10,6 +10,7 @@ pygame.mixer.set_num_channels(16)
 pygame.mixer.music.load("sounds/battlemusic2.mp3")
 pygame.mixer.music.set_volume(0.1)
 pygame.mixer.music.play(-1)
+
 WIDTH = 1300
 HEIGHT = 800
 BORDER = 20
@@ -29,7 +30,7 @@ clock = pygame.time.Clock()
 
 
 boom_sound = pygame.mixer.Sound("sounds/boom.wav")
-tank1 = Tank(YELLOW, arena_map.spawn1[0], arena_map.spawn1[1], 0, menu.tank1_type)
+tank1 = Tank(RED, arena_map.spawn1[0], arena_map.spawn1[1], 0, menu.tank1_type)
 tank2 = Tank(BLUE, arena_map.spawn2[0], arena_map.spawn2[1], 180, menu.tank2_type)
 print(menu.tank1_type, menu.tank2_type)
 previous_state = "title"
